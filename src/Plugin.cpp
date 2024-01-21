@@ -6,6 +6,7 @@
 #include <ll/api/event/EventBus.h>
 #include <ll/api/event/ListenerBase.h>
 #include <ll/api/form/ModalForm.h>
+#include <ll/api/form/SimpleForm.h>
 #include <ll/api/service/Bedrock.h>
 #include <mc/entity/utilities/ActorType.h>
 #include <mc/server/commands/CommandOrigin.h>
@@ -36,29 +37,23 @@ bool Plugin::enable() {
     command->addOverload();
     command->setCallback(
         [&logger](DynamicCommand const&, CommandOrigin const& origin, CommandOutput& output, std::unordered_map<std::string, DynamicCommand::Result>&) {
-            auto* entity = origin.getEntity();
+            auto entity = origin.getEntity();
             if (entity == nullptr || !entity->isType(ActorType::Player)) {
                 output.error("只有玩家可以打开菜单 | Only players can open menu");
                 return;
             }
-            auto                player = (Player*)entity;
-            ll::form::ModalForm form(
-                "YXM菜单",
-                "你喜欢YXM服务器吗?",
-                "Yes",
-                "No",
-                [&logger](Player& player, bool yes) {
-                    if (yes) {
-                        player.kill();
-                        player.sendMessage("我爱'死'YXM了!");
-                    } else {
-                        player.kill();
-                        player.sendMessage("我不喜欢YXM,我不配活在这个世界上...");
-                    }
-                }
-            );
+            auto player = (Player*)entity;
 
-            form.sendTo(*player);
+            ll::form::SimpleForm form("YXM菜单", "YXM666");
+            form.appendButton("Button 1", "", [](Player& pl) {
+                pl.sendMessage("Button 1");
+            });
+            form.sendTo(*player, [](Player& pl, int num) {
+                switch (num) {
+                case 0:
+                    break;
+                }
+            });
         }
     );
     DynamicCommand::setup(commandRegistry, std::move(command));
